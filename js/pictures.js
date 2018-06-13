@@ -1,15 +1,17 @@
 'use strict';
 
 var NUMBER_OF_POSTS = 25;
-var MIN_NUMBER_OF_LIKES = 15;
-var MAX_NUMBER_OF_LIKES = 200;
-var MAX_NUMBER_OF_COMMENTS = 2;
 var MAX_COMMENT_LENGTH = 2;
 
 var postItem = document.querySelector('#picture').content.querySelector('.picture__link');
 
-var posts = [];
+var optionsGeneratePost = {
+  minLikes: 15,
+  maxLikes: 200,
+  maxComments: 2,
+};
 
+var posts = [];
 var comments = [
   'Всё отлично!',
   'В целом все неплохо. Но не всё.',
@@ -31,14 +33,13 @@ var getRandomNumber = function (min, max) {
   return Math.floor(Math.random() * (max + 1 - min) + min);
 };
 
-var getNumberOfLikes = function (min, max) {
-  return getRandomNumber(min, max);
+var getUrlPhoto = function (currentPost) {
+  return 'photos/' + currentPost + '.jpg';
 };
 
 var getRandomComment = function (arr) {
   var commentLength = getRandomNumber(1, MAX_COMMENT_LENGTH);
   var comment = [];
-
   for (var i = 0; i < commentLength; i++) {
     var numberOfComment = getRandomNumber(0, arr.length - 1);
     comment[i] = arr[numberOfComment];
@@ -58,29 +59,21 @@ var getRandomDescription = function () {
   return descriptions[getRandomNumber(0, descriptions.length - 1)];
 };
 
-var generatePost = function (currentPost, likes, commentList, description) {
-  var post = {};
-  post.url = 'photos/' + currentPost + '.jpg';
-  post.likes = likes;
-  post.comments = commentList;
-  post.description = description;
-
-  return post;
-};
-
-var generateArrPosts = function (amount, minLikes, maxLikes, maxComments) {
-  for (var i = 1; i < amount + 1; i++) {
-    posts[i - 1] = generatePost(i, getNumberOfLikes(minLikes, maxLikes), getArrComments(maxComments), getRandomDescription());
+var generateArrPosts = function (amount, option) {
+  for (var i = 0; i < amount; i++) {
+    posts[i] = {};
+    posts[i].url = getUrlPhoto(i + 1);
+    posts[i].likes = getRandomNumber(option.minLikes, option.maxLikes);
+    posts[i].comments = getArrComments(option.maxComments);
+    posts[i].description = getRandomDescription();
   }
 };
 
 var renderPost = function (arr) {
   var post = postItem.cloneNode(true);
-
   post.querySelector('.picture__img').src = arr.url;
   post.querySelector('.picture__stat--likes').textContent = arr.likes;
   post.querySelector('.picture__stat--comments').textContent = arr.comments.length;
-
   return post;
 };
 
@@ -114,7 +107,7 @@ var showPreviewPost = function (currentPost) {
   element.querySelector('.social__caption').textContent = currentPost.description;
 };
 
-generateArrPosts(NUMBER_OF_POSTS, MIN_NUMBER_OF_LIKES, MAX_NUMBER_OF_LIKES, MAX_NUMBER_OF_COMMENTS);
+generateArrPosts(NUMBER_OF_POSTS, optionsGeneratePost);
 renderWallOfPictures(posts);
 showPreviewPost(posts[0]);
 hideElement(document.querySelector('.social__comment-count'));
