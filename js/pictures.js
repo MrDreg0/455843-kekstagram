@@ -84,6 +84,10 @@ var renderWallOfPictures = function (arr) {
     fragment.appendChild(renderPost(arr[i]));
   }
   wall.appendChild(fragment);
+  var postImages = document.querySelectorAll('.picture__img');
+  for (var j = 0; j < postImages.length; j++) {
+    postImages[j].num = j;
+  }
 };
 
 var showElement = function (element) {
@@ -92,6 +96,10 @@ var showElement = function (element) {
 
 var hideElement = function (element) {
   element.classList.add('visually-hidden');
+};
+
+var closePopup = function (element) {
+  element.classList.add('hidden');
 };
 
 var showPreviewPost = function (currentPost) {
@@ -105,10 +113,20 @@ var showPreviewPost = function (currentPost) {
     commentList[i].querySelector('.social__text').textContent = currentPost.comments[i];
   }
   element.querySelector('.social__caption').textContent = currentPost.description;
+  var closePostPopup = document.querySelector('#picture-cancel');
+  closePostPopup.addEventListener('click', function () {
+    closePopup(element);
+  });
 };
 
 generateArrPosts(NUMBER_OF_POSTS, optionsGeneratePost);
 renderWallOfPictures(posts);
-showPreviewPost(posts[0]);
 hideElement(document.querySelector('.social__comment-count'));
 hideElement(document.querySelector('.social__loadmore'));
+
+var postSection = document.querySelector('section.pictures');
+postSection.addEventListener('click', function (evt) {
+  if (evt.target.tagName === 'IMG') {
+    showPreviewPost(posts[evt.target.num]);
+  }
+});
