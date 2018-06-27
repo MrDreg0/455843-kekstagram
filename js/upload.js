@@ -1,10 +1,12 @@
 'use strict';
 
-var FILTER_CHROME = 'chrome';
-var FILTER_SEPIA = 'sepia';
-var FILTER_MARVIN = 'marvin';
-var FILTER_PHOBOS = 'phobos';
-var FILTER_HEAT = 'heat';
+var Filter = {
+  CHROME: 'chrome',
+  SEPIA: 'sepia',
+  MARVIN: 'marvin',
+  PHOBOS: 'phobos',
+  HEAT: 'heat'
+};
 
 var fieldUploadFile = document.querySelector('#upload-file');
 
@@ -14,20 +16,25 @@ var editImage = function () {
   var radioButtons = previewUploadFile.querySelectorAll('.effects__radio');
   var image = previewUploadFile.querySelector('.img-upload__preview img');
   var scalePin = previewUploadFile.querySelector('.scale__pin');
+  var lastPinChangeListener = null;
+
+  var createFilterListener = function (evt) {
+    var filter = evt.target.value;
+    if (lastPinChangeListener !== null) {
+      scalePin.removeEventListener('mouseup', lastPinChangeListener);
+    }
+    lastPinChangeListener = createPinListener(filter);
+    setDefaultEffectsImage(image);
+    image.classList.add('effects__preview--' + evt.target.value);
+    scalePin.addEventListener('mouseup', lastPinChangeListener);
+  };
 
   window.showElement(previewUploadFile);
   for (var i = 0; i < radioButtons.length; i++) {
-    radioButtons[i].addEventListener('change', function (evt) {
-      var filter = evt.target.value;
-      var listener = addPinListener(filter);
-      scalePin.removeEventListener('mouseup', listener);
-      setDefaultEffectsImage(image);
-      image.classList.add('effects__preview--' + evt.target.value);
-      scalePin.addEventListener('mouseup', listener);
-    });
+    radioButtons[i].addEventListener('change', createFilterListener);
   }
 
-  var addPinListener = function (filter) {
+  var createPinListener = function (filter) {
     var onPinChange = function () {
       var currentPinValue = scalePin.offsetLeft;
       image.style.filter = getFilterValue(filter, currentPinValue);
@@ -42,23 +49,23 @@ var editImage = function () {
     var filterValue;
 
     switch (filter) {
-      case FILTER_CHROME:
+      case Filter.CHROME:
         maxFilterValue = 1;
         filterValue = 'grayscale(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
-      case FILTER_SEPIA:
+      case Filter.SEPIA:
         maxFilterValue = 1;
         filterValue = 'sepia(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
-      case FILTER_MARVIN:
+      case Filter.MARVIN:
         maxFilterValue = 100;
         filterValue = 'invert(' + generateFilterValue(value, maxFilterValue, maxPinValue) + '%)';
         break;
-      case FILTER_PHOBOS:
+      case Filter.PHOBOS:
         maxFilterValue = 3;
         filterValue = 'blur(' + generateFilterValue(value, maxFilterValue, maxPinValue) + 'px)';
         break;
-      case FILTER_HEAT:
+      case Filter.HEAT:
         maxFilterValue = 3;
         filterValue = 'brightness(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
@@ -72,6 +79,9 @@ var editImage = function () {
 
   closeUploadButton.addEventListener('click', function () {
     setDefaultEffectsImage(image);
+    for (var j = 0; j < radioButtons.length; j++) {
+      radioButtons[j].removeEventListener('change', createFilterListener);
+    }
     window.closePopup(previewUploadFile);
   });
 };
