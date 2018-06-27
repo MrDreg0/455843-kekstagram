@@ -1,5 +1,11 @@
 'use strict';
 
+var FILTER_CHROME = 'chrome';
+var FILTER_SEPIA = 'sepia';
+var FILTER_MARVIN = 'marvin';
+var FILTER_PHOBOS = 'phobos';
+var FILTER_HEAT = 'heat';
+
 var fieldUploadFile = document.querySelector('#upload-file');
 
 var editImage = function () {
@@ -12,40 +18,47 @@ var editImage = function () {
   window.showElement(previewUploadFile);
   for (var i = 0; i < radioButtons.length; i++) {
     radioButtons[i].addEventListener('change', function (evt) {
+      var filter = evt.target.value;
+      var listener = addPinListener(filter);
+      scalePin.removeEventListener('mouseup', listener);
       setDefaultEffectsImage(image);
       image.classList.add('effects__preview--' + evt.target.value);
-      scalePin.addEventListener('mouseup', function () {
-        var currentPinValue = parseInt(getComputedStyle(scalePin).left, 10);
-        var filter = evt.target.value;
-        image.style.filter = getFilterValue(filter, currentPinValue);
-      });
+      scalePin.addEventListener('mouseup', listener);
     });
   }
 
+  var addPinListener = function (filter) {
+    var onPinChange = function () {
+      var currentPinValue = scalePin.offsetLeft;
+      image.style.filter = getFilterValue(filter, currentPinValue);
+    };
+    return onPinChange;
+  };
+
   var getFilterValue = function (filter, value) {
     var scaleLine = previewUploadFile.querySelector('.scale__line');
-    var maxPinValue = parseInt(getComputedStyle(scaleLine).width, 10);
+    var maxPinValue = scaleLine.offsetWidth;
     var maxFilterValue;
     var filterValue;
 
     switch (filter) {
-      case 'chrome':
+      case FILTER_CHROME:
         maxFilterValue = 1;
         filterValue = 'grayscale(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
-      case 'sepia':
+      case FILTER_SEPIA:
         maxFilterValue = 1;
         filterValue = 'sepia(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
-      case 'marvin':
+      case FILTER_MARVIN:
         maxFilterValue = 100;
         filterValue = 'invert(' + generateFilterValue(value, maxFilterValue, maxPinValue) + '%)';
         break;
-      case 'phobos':
+      case FILTER_PHOBOS:
         maxFilterValue = 3;
         filterValue = 'blur(' + generateFilterValue(value, maxFilterValue, maxPinValue) + 'px)';
         break;
-      case 'heat':
+      case FILTER_HEAT:
         maxFilterValue = 3;
         filterValue = 'brightness(' + generateFilterValue(value, maxFilterValue, maxPinValue) + ')';
         break;
@@ -64,7 +77,7 @@ var editImage = function () {
 };
 
 var setDefaultEffectsImage = function (image) {
-  image.removeAttribute('class');
+  image.className = '';
   image.style.filter = '';
 };
 
