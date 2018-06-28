@@ -91,4 +91,31 @@ var setDefaultEffectsImage = function (image) {
   image.style.filter = '';
 };
 
+var areaHashtag = document.querySelector('.text__hashtags');
+
+areaHashtag.addEventListener('change', function () {
+  areaHashtag.setCustomValidity('');
+  var arrHashtags = areaHashtag.value.split(' ');
+  var messagesValidityHashtag = [
+    'Хеш-тег должен начинаться с символа \"#\".',
+    'Слишком короткий хеш-тег.',
+    'Максимальная длинна хеш-тега 20 символов.',
+    'Максимальное количество хеш-тегов 5.'
+  ];
+
+  for (var i = 0; i < arrHashtags.length; i++) {
+    if (arrHashtags[i].charAt(0) !== '#') {
+      areaHashtag.setCustomValidity(messagesValidityHashtag[0]);
+    } else if (arrHashtags[i].length < 2) {
+      areaHashtag.setCustomValidity(messagesValidityHashtag[1]);
+    } else if (arrHashtags[i].length > 20) {
+      areaHashtag.setCustomValidity(messagesValidityHashtag[2]);
+    }
+  }
+  if (arrHashtags.length > 5) {
+    areaHashtag.setCustomValidity(messagesValidityHashtag[3]);
+  }
+});
+
+
 fieldUploadFile.addEventListener('change', editImage);
