@@ -1,5 +1,11 @@
 'use strict';
 
+var ResizeValues = {
+  MIN: 25,
+  MAX: 100,
+  STEP: 25
+};
+
 var Filter = {
   CHROME: 'chrome',
   SEPIA: 'sepia',
@@ -8,15 +14,61 @@ var Filter = {
   HEAT: 'heat'
 };
 
+var ESC_KEYCODE = 27;
+
 var fieldUploadFile = document.querySelector('#upload-file');
 
 var editImage = function () {
+  var DEFAULT_SCALE_VALUE = ResizeValues.MAX;
+
   var previewUploadFile = document.querySelector('.img-upload__overlay');
   var closeUploadButton = previewUploadFile.querySelector('#upload-cancel');
   var radioButtons = previewUploadFile.querySelectorAll('.effects__radio');
-  var image = previewUploadFile.querySelector('.img-upload__preview img');
+  var previewImageBlock = previewUploadFile.querySelector('.img-upload__preview');
+  var image = previewImageBlock.querySelector('img');
   var scalePin = previewUploadFile.querySelector('.scale__pin');
+  var resizeField = previewUploadFile.querySelector('.img-upload__resize');
+  var resizeButtons = resizeField.querySelectorAll('button.resize__control');
+  var resizeTextArea = resizeField.querySelector('.resize__control--value');
+  var lastScaleValue;
   var lastPinChangeListener = null;
+
+  var resizeControlsOptions = [
+    'minus',
+    'plus'
+  ];
+
+  var setScaleForImg = function (value) {
+    previewImageBlock.style.transform = getScaleValue(value);
+  };
+
+  var getScaleValue = function (value) {
+    var scaleValue;
+    lastScaleValue = value;
+    scaleValue = 'scale(' + value / 100 + ')';
+    return scaleValue;
+  };
+
+  setScaleForImg(DEFAULT_SCALE_VALUE);
+
+  for (var k = 0; k < resizeButtons.length; k++) {
+    resizeButtons[k].dataset.option = resizeControlsOptions[k];
+  }
+
+  var createResizeListener = function (evt) {
+    var currentValue;
+    if (evt.target.dataset.option === 'plus' && lastScaleValue !== ResizeValues.MAX) {
+      currentValue = lastScaleValue + ResizeValues.STEP;
+      setScaleForImg(currentValue);
+      resizeTextArea.value = currentValue + '%';
+    } else if (evt.target.dataset.option === 'minus' && lastScaleValue !== ResizeValues.MIN) {
+      currentValue = lastScaleValue - ResizeValues.STEP;
+      setScaleForImg(currentValue);
+      resizeTextArea.value = currentValue + '%';
+    }
+  };
+
+  resizeField.addEventListener('click', createResizeListener);
 
   var createFilterListener = function (evt) {
     var filter = evt.target.value;
@@ -77,13 +129,25 @@ var editImage = function () {
     return (maxFilterValue * currentPinValue) / maxPinValue;
   };
 
-  closeUploadButton.addEventListener('click', function () {
+  var onFormEscPress = function (evt) {
+    if (evt.keyCode === ESC_KEYCODE) {
+      closeUploadForm();
+    }
+  };
+
+  var closeUploadForm = function () {
     setDefaultEffectsImage(image);
     for (var j = 0; j < radioButtons.length; j++) {
       radioButtons[j].removeEventListener('change', createFilterListener);
     }
+    resizeField.removeEventListener('click', createResizeListener);
     window.closePopup(previewUploadFile);
-  });
+    closeUploadButton.removeEventListener('click', closeUploadForm);
+    previewUploadFile.removeEventListener('keydown', onFormEscPress);
+  };
+
+  previewUploadFile.addEventListener('keydown', onFormEscPress);
+  closeUploadButton.addEventListener('click', closeUploadForm);
 };
 
 var setDefaultEffectsImage = function (image) {
@@ -96,24 +160,39 @@ var areaHashtag = document.querySelector('.text__hashtags');
 areaHashtag.addEventListener('change', function () {
   areaHashtag.setCustomValidity('');
   var arrHashtags = areaHashtag.value.split(' ');
-  var messagesValidityHashtag = [
-    'Хеш-тег должен начинаться с символа \"#\".',
-    'Слишком короткий хеш-тег.',
-    'Максимальная длинна хеш-тега 20 символов.',
-    'Максимальное количество хеш-тегов 5.'
-  ];
+  var HashTagOption = {
+    FIRST_SYMBOL: '#',
+    MIN_LENGTH: 2,
+    MAX_LENGTH: 20,
+    MAX_QUANTITY: 5
+  };
+  var HashTagError = {
+    MUST_START_WITH_HASH: 'Хеш-тег должен начинаться с символа \"#\".',
+    TOO_SHORT: 'Слишком короткий хеш-тег.',
+    TOO_LARGE_LENGTH: 'Максимальная длинна хеш-тега 20 символов.',
+    TOO_LARGE_QUANTITY: 'Максимальное количество хеш-тегов 5.',
+    DUPLICATE_VALUES: 'Использованы повторяющиеся хеш-теги.'
+  };
 
   for (var i = 0; i < arrHashtags.length; i++) {
-    if (arrHashtags[i].charAt(0) !== '#') {
-      areaHashtag.setCustomValidity(messagesValidityHashtag[0]);
-    } else if (arrHashtags[i].length < 2) {
-      areaHashtag.setCustomValidity(messagesValidityHashtag[1]);
-    } else if (arrHashtags[i].length > 20) {
-      areaHashtag.setCustomValidity(messagesValidityHashtag[2]);
+    if (arrHashtags[i].charAt(0) !== HashTagOption.FIRST_SYMBOL) {
+      areaHashtag.setCustomValidity(HashTagError.MUST_START_WITH_HASH);
+    } else if (arrHashtags[i].length < HashTagOption.MIN_LENGTH) {
+      areaHashtag.setCustomValidity(HashTagError.TOO_SHORT);
+    } else if (arrHashtags[i].length > HashTagOption.MAX_LENGTH) {
+      areaHashtag.setCustomValidity(HashTagError.TOO_LARGE_LENGTH);
+    }
+    var currentElement = arrHashtags[i].toLowerCase();
+    var arr = arrHashtags.slice();
+    arr.splice(i, 1);
+    for (var j = 0; j < arr.length; j++) {
+      if (arr[j].toLowerCase() === currentElement) {
+        areaHashtag.setCustomValidity(HashTagError.DUPLICATE_VALUES);
+      }
     }
   }
-  if (arrHashtags.length > 5) {
-    areaHashtag.setCustomValidity(messagesValidityHashtag[3]);
+  if (arrHashtags.length > HashTagOption.MAX_QUANTITY) {
+    areaHashtag.setCustomValidity(HashTagError.TOO_LARGE_QUANTITY);
   }
 });
 
