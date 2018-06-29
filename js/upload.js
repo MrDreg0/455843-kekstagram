@@ -131,7 +131,11 @@ var editImage = function () {
 
   var onFormEscPress = function (evt) {
     if (evt.keyCode === ESC_KEYCODE) {
-      closeUploadForm();
+      if (evt.target.className === 'text__hashtags' || evt.target.className === 'text__description') {
+        return;
+      } else {
+        closeUploadForm();
+      }
     }
   };
 
@@ -141,12 +145,12 @@ var editImage = function () {
       radioButtons[j].removeEventListener('change', createFilterListener);
     }
     resizeField.removeEventListener('click', createResizeListener);
-    window.closePopup(previewUploadFile);
     closeUploadButton.removeEventListener('click', closeUploadForm);
-    previewUploadFile.removeEventListener('keydown', onFormEscPress);
+    document.removeEventListener('keydown', onFormEscPress);
+    window.closePopup(previewUploadFile);
   };
 
-  previewUploadFile.addEventListener('keydown', onFormEscPress);
+  document.addEventListener('keydown', onFormEscPress);
   closeUploadButton.addEventListener('click', closeUploadForm);
 };
 

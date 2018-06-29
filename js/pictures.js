@@ -126,7 +126,7 @@ hideElement(document.querySelector('.social__loadmore'));
 
 var postSection = document.querySelector('section.pictures');
 postSection.addEventListener('click', function (evt) {
-  if (evt.target.tagName === 'IMG') {
+  if (evt.target.className === 'picture__img') {
     showPreviewPost(posts[evt.target.dataset.index]);
   }
 });
