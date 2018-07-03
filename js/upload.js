@@ -184,14 +184,8 @@ areaHashtag.addEventListener('change', function () {
 });
 
 var findErrorHashtagField = function (arr) {
+  var hashtagsSet = new Set();
   for (var i = 0; i < arr.length; i++) {
-    var currentElement = arr[i].toLowerCase();
-    var array = arr.slice();
-
-    var findHashtagCopy = function (element) {
-      return element.toLowerCase() === currentElement;
-    };
-
     if (arr[i].charAt(0) !== HashTagOption.FIRST_SYMBOL) {
       showErrorValidityHashtag(HashTagError.MUST_START_WITH_HASH);
       return;
@@ -202,11 +196,11 @@ var findErrorHashtagField = function (arr) {
       showErrorValidityHashtag(HashTagError.TOO_LARGE_LENGTH);
       return;
     }
-    if (array.some(findHashtagCopy)) {
-      showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
-      return;
-    }
-    array.splice(i, 1);
+    hashtagsSet.add(arr[i].toLowerCase());
+  }
+  if (arr.length !== hashtagsSet.length) {
+    showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
+    return;
   }
   if (arr.length > HashTagOption.MAX_QUANTITY) {
     showErrorValidityHashtag(HashTagError.TOO_LARGE_QUANTITY);
