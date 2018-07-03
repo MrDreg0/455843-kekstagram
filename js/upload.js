@@ -65,17 +65,20 @@ var editImage = function () {
   var onButtonMinusClick = function () {
     if (lastScaleValue !== ResizeValues.MAX) {
       lastScaleValue += ResizeValues.STEP;
-      setScaleForImg(lastScaleValue);
-      resizeTextArea.value = lastScaleValue + '%';
+      setResizeValueText(lastScaleValue);
     }
   };
 
   var onButtonPlusClick = function () {
     if (lastScaleValue !== ResizeValues.MIN) {
       lastScaleValue -= ResizeValues.STEP;
-      setScaleForImg(lastScaleValue);
-      resizeTextArea.value = lastScaleValue + '%';
+      setResizeValueText(lastScaleValue);
     }
+  };
+
+  var setResizeValueText = function (value) {
+    setScaleForImg(value);
+    resizeTextArea.value = value + '%';
   };
 
   resizeButtonPlus.addEventListener('click', onButtonMinusClick);
@@ -177,41 +180,42 @@ areaHashtag.addEventListener('change', function () {
   areaHashtag.setCustomValidity('');
   var arrHashtags = areaHashtag.value.split(' ');
 
-  var findErrorHashtagField = function (arr) {
-    for (var i = 0; i < arr.length; i++) {
-      var currentElement = arr[i].toLowerCase();
-      var array = arr.slice();
-
-      var findHashtagCopy = function (element) {
-        return element.toLowerCase() === currentElement;
-      };
-
-      if (arr[i].charAt(0) !== HashTagOption.FIRST_SYMBOL) {
-        showErrorValidityHashtag(HashTagError.MUST_START_WITH_HASH);
-        return;
-      } else if (arr[i].length < HashTagOption.MIN_LENGTH) {
-        showErrorValidityHashtag(HashTagError.TOO_SHORT);
-        return;
-      } else if (arr[i].length > HashTagOption.MAX_LENGTH) {
-        showErrorValidityHashtag(HashTagError.TOO_LARGE_LENGTH);
-        return;
-      }
-      if (array.some(findHashtagCopy)) {
-        showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
-        return;
-      }
-      array.splice(i, 1);
-    }
-    if (arrHashtags.length > HashTagOption.MAX_QUANTITY) {
-      showErrorValidityHashtag(HashTagError.TOO_LARGE_QUANTITY);
-      return;
-    }
-  };
-
-  var showErrorValidityHashtag = function (message) {
-    areaHashtag.setCustomValidity(message);
-  };
   findErrorHashtagField(arrHashtags);
 });
+
+var findErrorHashtagField = function (arr) {
+  for (var i = 0; i < arr.length; i++) {
+    var currentElement = arr[i].toLowerCase();
+    var array = arr.slice();
+
+    var findHashtagCopy = function (element) {
+      return element.toLowerCase() === currentElement;
+    };
+
+    if (arr[i].charAt(0) !== HashTagOption.FIRST_SYMBOL) {
+      showErrorValidityHashtag(HashTagError.MUST_START_WITH_HASH);
+      return;
+    } else if (arr[i].length < HashTagOption.MIN_LENGTH) {
+      showErrorValidityHashtag(HashTagError.TOO_SHORT);
+      return;
+    } else if (arr[i].length > HashTagOption.MAX_LENGTH) {
+      showErrorValidityHashtag(HashTagError.TOO_LARGE_LENGTH);
+      return;
+    }
+    if (array.some(findHashtagCopy)) {
+      showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
+      return;
+    }
+    array.splice(i, 1);
+  }
+  if (arr.length > HashTagOption.MAX_QUANTITY) {
+    showErrorValidityHashtag(HashTagError.TOO_LARGE_QUANTITY);
+    return;
+  }
+};
+
+var showErrorValidityHashtag = function (message) {
+  areaHashtag.setCustomValidity(message);
+};
 
 fieldUploadFile.addEventListener('change', editImage);
