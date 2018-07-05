@@ -184,9 +184,15 @@ areaHashtag.addEventListener('change', function () {
 });
 
 var findErrorHashtagField = function (arr) {
-  var hashtagsSet = new Set();
   for (var i = 0; i < arr.length; i++) {
-    if (arr[i].charAt(0) !== HashTagOption.FIRST_SYMBOL) {
+    var currentElement = arr[i].toLowerCase();
+    var array = arr.slice();
+    array.splice(i, 1);
+
+    var findHashtagCopy = function (element) {
+      return element.toLowerCase() === currentElement;
+    };
+    if (arr[i].charAt(0) !== HashTagOption.FIRST_SYMBOL && arr.length > 0) {
       showErrorValidityHashtag(HashTagError.MUST_START_WITH_HASH);
       return;
     } else if (arr[i].length < HashTagOption.MIN_LENGTH) {
@@ -196,11 +202,10 @@ var findErrorHashtagField = function (arr) {
       showErrorValidityHashtag(HashTagError.TOO_LARGE_LENGTH);
       return;
     }
-    hashtagsSet.add(arr[i].toLowerCase());
-  }
-  if (arr.length !== hashtagsSet.length) {
-    showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
-    return;
+    if (array.some(findHashtagCopy)) {
+      showErrorValidityHashtag(HashTagError.DUPLICATE_VALUES);
+      return;
+    }
   }
   if (arr.length > HashTagOption.MAX_QUANTITY) {
     showErrorValidityHashtag(HashTagError.TOO_LARGE_QUANTITY);
